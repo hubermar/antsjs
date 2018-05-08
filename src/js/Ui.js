@@ -2,11 +2,13 @@ import Properties from './Properties.js';
 import Model from './Model.js';
 import AntUi from './AntUi.js';
 import HillUi from './HillUi.js';
+import Event from './Event.js';
 
 export default class Ui {
 
   constructor(model, startCallback, stopCallback) {
     this._model = model;
+    this._uis = new Map([]);
 
     let wrapper = document.getElementById("wrapper");
     this._addButton(wrapper, 'Start', 'a', startCallback);
@@ -36,23 +38,34 @@ export default class Ui {
   }
 
   draw() {
-    var ctx = this._box.getContext("2d");
-    this._model.objects.forEach(function(object) {
-      let modelType = object.constructor.name;
-      let ui = null;
-      switch(modelType) {
-        case 'AntModel':
-          ui = new AntUi(object);
-          break;
-        case 'HillModel':
-          ui = new HillUi(object);
+    this._model.events.forEach((event) => {
+      switch(event.type) {
+        case 'event_create':
+          this._createUi(event.id, event.payload);
           break;
         default:
-          console.log('unknown model type: ' + object)
-      }
-      if (ui !== null) {
-        ui.draw(ctx);
+          console.log('unknown event type: ' + event.type);
       }
     });
+  }
+
+  _createUi(id, payload) {
+    let type = payload['type'];
+    let pos = payload['pos'];
+    let ui = null;
+    switch(type) {
+      case 'AntModel':
+        ui = new AntUi(pos);
+        break;
+      case 'HillModel':
+        ui = new HillUi(pos);
+        break;
+      default:
+        console.log('unknown model type: ' + model)
+    }
+    if (ui !== null) {
+      this._uis.set(id, ui);
+      ui.draw(this._box.getContext("2d"));
+    }
   }
 };
