@@ -1,12 +1,9 @@
+ObjectModel.ID = 0;
+
 export default class ObjectModel {
 
-  static nextId() {
-    let id = 0;
-    return id++;
-  }
-
   constructor() {
-    this._id = ObjectModel.nextId();
+    this._id = ++ObjectModel.ID;
   }
 
   get id() {
@@ -21,4 +18,3 @@ export default class ObjectModel {
     this._pos = pos;
   }
 };
-

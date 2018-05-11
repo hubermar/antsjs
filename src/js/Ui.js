@@ -1,5 +1,5 @@
-import Properties from './Properties.js';
 import Model from './Model.js';
+import ObjectUi from './ObjectUi.js';
 import AntUi from './AntUi.js';
 import HillUi from './HillUi.js';
 import Event from './Event.js';
@@ -27,8 +27,8 @@ export default class Ui {
   _addCanvas(parent, width, height, callback) {
     this._box = document.createElement("canvas");
     this._box.setAttribute("class", "ground");
-    this._box.setAttribute("width", Properties.SIZE * width);
-    this._box.setAttribute("height", Properties.SIZE * height);
+    this._box.setAttribute("width", ObjectUi.size * width);
+    this._box.setAttribute("height", ObjectUi.size * height);
     this._box.addEventListener('click', callback);
     parent.appendChild(this._box);
   }
@@ -38,6 +38,11 @@ export default class Ui {
   }
 
   draw() {
+    this._processEvents()
+    this._drawUis();
+  }
+
+  _processEvents() {
     this._model.events.forEach((event) => {
       switch(event.type) {
         case 'event_create':
@@ -49,23 +54,25 @@ export default class Ui {
     });
   }
 
+  _drawUis() {
+    let context = this._box.getContext("2d");
+    this._uis.forEach((ui, id) => {
+      ui.draw(context);
+    });
+  }
+
   _createUi(id, payload) {
     let type = payload['type'];
     let pos = payload['pos'];
-    let ui = null;
     switch(type) {
       case 'AntModel':
-        ui = new AntUi(pos);
+        this._uis.set(id, new AntUi(pos));
         break;
       case 'HillModel':
-        ui = new HillUi(pos);
+        this._uis.set(id, new HillUi(pos));
         break;
       default:
         console.log('unknown model type: ' + model)
-    }
-    if (ui !== null) {
-      this._uis.set(id, ui);
-      ui.draw(this._box.getContext("2d"));
     }
   }
 };

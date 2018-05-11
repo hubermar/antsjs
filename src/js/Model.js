@@ -35,6 +35,7 @@ export default class Model {
     // return a clone of the events collection
     let clone = new Set(this._events);
     this._events.clear();
+    console.log('returning ' + clone.size + ' events');
     return clone;
   }
 
