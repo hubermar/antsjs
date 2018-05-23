@@ -1,15 +1,12 @@
 import ObjectUi from './ObjectUi.js';
 
-const COLOR_HILL = '#ffffff';
+const COLOR_HILL = '#D2691E';
 
 export default class HillUi extends ObjectUi {
+
     constructor(pos) {
       super(pos);
-    }
-    draw(ctx) {
-      ctx.fillStyle = COLOR_HILL;
-      ctx.beginPath();
-      ctx.arc(this.pos.x * ObjectUi.size, this.pos.y * ObjectUi.size, ObjectUi.size, 0, 2 * Math.PI);
-      ctx.fill();
+      super.color = COLOR_HILL;
+      super.z = 100;
     }
 };

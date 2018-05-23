@@ -1,8 +1,7 @@
 import ObjectModel from './ObjectModel.js';
 
-export default class AntModel extends ObjectModel {
+export default class HillModel extends ObjectModel {
     constructor(pos) {
-      super();
-      this.pos = pos;
+      super(pos);
     }
 }

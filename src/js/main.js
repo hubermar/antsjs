@@ -3,51 +3,91 @@
 import Model from './Model.js';
 import Ui from './Ui.js';
 
+Function.prototype.Timer = function (interval, calls, onend) {
+  var count = 0,
+      payloadFunction = this,
+      startTime = new Date();
+
+  var callbackFunction = function () {
+    return payloadFunction(startTime, count);
+  };
+
+  var endFunction = function () {
+    if (onend) {
+      onend(startTime, count, calls);
+    }
+  };
+
+  var timerFunction = function () {
+    count++;
+    if (count < calls && callbackFunction() != false) {
+      window.setTimeout(timerFunction, interval);
+    } else {
+      endFunction();
+    }
+  };
+
+  timerFunction();
+};
+
 let app = (function() {
 
-  const FPS = 0.5;
+  const FPS = 2.0;
   const TIMESTEP = 1000 / FPS;
 
   let _running = false;
+
   let _antsModel;
   let _antsUi;
 
-  let init = function() {
+  function _init() {
     _antsModel = new Model();
-    _antsUi = new Ui(_antsModel, start, stop);
+    _antsUi = new Ui(_antsModel.width, _antsModel.height);
   }
 
-  let start = function() {
-    _running = true;
-    requestAnimationFrame(_mainLoop);
+  function _startStop() {
+    if (_running) {
+      _running = false;
+    } else {
+      _running = true;
+      _mainLoop.Timer(TIMESTEP, Infinity, _completed);
+    }
   }
 
-  let stop = function() {
-    _running = false;
+  function _completed() {
   }
 
   function _mainLoop(timestamp) {
     if (!_running) {
-      return;
+      return false;
     }
-
-    let startMillis = Date.now();
-    let elapsed = 0;
-    while (elapsed < TIMESTEP) {
-        _antsModel.update();
-        let current = Date.now();
-        elapsed += (current - startMillis);
-    }
-    _antsUi.draw();
-    requestAnimationFrame(_mainLoop);
+    let events = _antsModel.update();
+    _antsUi.draw(events);
+    return true;
   };
 
+  function _handleKey(event) {
+    console.log("key " + event.key + " (" + event.keycode + ") pressed");
+    switch (event.key) {
+      case 's':
+        _startStop();
+        break;
+      case 'a':
+        _antsModel.addAnt();
+        break;
+    }
+  }
+
   return {
-    init: init
+    init: _init,
+    handleKeypress: _handleKey
   };
 })();
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', (event) => {
   app.init();
 });
 
+window.addEventListener('keypress', (event) => { 
+  app.handleKeypress(event);
+});

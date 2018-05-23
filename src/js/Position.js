@@ -9,10 +9,19 @@ export default class Position {
     get y() {
       return this._y;
     }
-    set x(value) {
-      this._x = value;
+
+    translate(h, v) {
+      let newX = Math.max(this._x + h, 0);
+      let newY = Math.max(this._y + v, 0);
+      // TODO check max limit
+      return new Position(newX, newY);
     }
-    set y(value) {
-      this._y = value;
+
+    toString() {
+      return '(' + this.x + '/' + this.y + ')';
+    } 
+
+    static equals(left, right) {
+      return left.x == right.x && left.y == right.y;
     }
-};
+  };

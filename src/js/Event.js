@@ -1,3 +1,7 @@
+export const CREATE = 'event_create';
+export const MOVE = 'event_move';
+export const GONE = 'event_gone';
+
 export default class Event {
 
     constructor(eventType, id, payload) {
@@ -18,19 +22,30 @@ export default class Event {
         return this._payload;
     }
 
-    static newCreate(model) {
-        let payload = {'type' : model.constructor.name, 'pos' : model.pos};
-        return new Event('event_create', model.id, payload);
+    static get CREATE() {
+        return CREATE;
     }
 
-    static newDestroy(model) {
+    static get MOVE() {
+        return MOVE;
+    }
+
+    static get GONE() {
+        return GONE;
+    }
+
+    static newCreate(id, type, pos) {
+        let payload = {'type' : type, 'pos' : pos};
+        return new Event(CREATE, id, payload);
+    }
+
+    static newGone(id) {
         let payload = {};
-        return new Event('event_destroy', model.id, payload);
+        return new Event(GONE, id, payload);
     }
 
-    static newMove(model) {
-        let payload = {'pos': model.pos};
-        return new Event('event_move', model.id, payload);
+    static newMove(id, pos) {
+        let payload = {'pos': pos};
+        return new Event(MOVE, id, payload);
     }
-
 }

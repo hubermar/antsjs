@@ -1,9 +1,8 @@
-ObjectModel.ID = 0;
-
 export default class ObjectModel {
 
-  constructor() {
+  constructor(pos) {
     this._id = ++ObjectModel.ID;
+    this._pos = pos;
   }
 
   get id() {
@@ -14,7 +13,11 @@ export default class ObjectModel {
     return this._pos;
   }
 
-  set pos(pos) {
-    this._pos = pos;
+  set pos(value) {
+    this._pos = value;
   }
+
+  update(events) {}
 };
+
+ObjectModel.ID = 0;

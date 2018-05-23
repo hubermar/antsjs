@@ -6,14 +6,10 @@ import Event from './Event.js';
 
 export default class Ui {
 
-  constructor(model, startCallback, stopCallback) {
-    this._model = model;
+  constructor(width, height) {
     this._uis = new Map([]);
-
     let wrapper = document.getElementById("wrapper");
-    this._addButton(wrapper, 'Start', 'a', startCallback);
-    this._addButton(wrapper, 'Stop', 'o', stopCallback);
-    this._addCanvas(wrapper, this._model.width, this._model.height, this._boxClicked);
+    this._addCanvas(wrapper, width, height, this._boxClicked);
   }
 
   _addButton(parent, label, accesskey, callback) {
@@ -37,16 +33,23 @@ export default class Ui {
     console.log(event);
   }
 
-  draw() {
-    this._processEvents()
+  draw(events) {
+    this._processEvents(events)
     this._drawUis();
   }
 
-  _processEvents() {
-    this._model.events.forEach((event) => {
+  _processEvents(events) {
+    console.log('received ' + events.size + ' model events');
+    events.forEach((event) => {
       switch(event.type) {
-        case 'event_create':
-          this._createUi(event.id, event.payload);
+        case Event.CREATE:
+          this._handleCreate(event.id, event.payload);
+          break;
+        case Event.MOVE:
+          this._handleMove(event.id, event.payload);
+          break;
+        case Event.GONE:
+          this._handleGone(event.id, event.payload);
           break;
         default:
           console.log('unknown event type: ' + event.type);
@@ -56,14 +59,30 @@ export default class Ui {
 
   _drawUis() {
     let context = this._box.getContext("2d");
-    this._uis.forEach((ui, id) => {
+    /*context.fillStyle = 'black';
+    context.fillRect(0, 0, this._box.width, this._box.height);
+    */context.clearRect(0, 0, this._box.width, this._box.height);
+    context.beginPath();
+    let uis = Array.from(this._uis.values());
+    uis.sort((l, r) => { return l.z - r.z; });
+    uis.forEach((ui) => {
       ui.draw(context);
     });
   }
 
-  _createUi(id, payload) {
+  _handleMove(id, payload) {
+    let ui = this._uis.get(id);
+    if (ui) {
+      let pos = payload['pos'];
+      console.log('moved ui: id=' + id + ' from ' + ui.pos + ' to ' + pos);
+      ui.pos = pos;
+    }
+  }
+
+  _handleCreate(id, payload) {
     let type = payload['type'];
     let pos = payload['pos'];
+    console.log('created ui: id=' + id + ' type=' + type + '@' + pos);
     switch(type) {
       case 'AntModel':
         this._uis.set(id, new AntUi(pos));
@@ -74,5 +93,10 @@ export default class Ui {
       default:
         console.log('unknown model type: ' + model)
     }
+  }
+
+  _handleGone(id, payload) {
+    console.log('detroying ui: id=' + id);
+    this._uis.delete(id);
   }
 };
