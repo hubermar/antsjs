@@ -3,13 +3,16 @@ import ObjectUi from './ObjectUi.js';
 import AntUi from './AntUi.js';
 import HillUi from './HillUi.js';
 import Event from './Event.js';
+import Position from './Position.js';
+
+const PIXEL_SIZE = 3;
 
 export default class Ui {
 
   constructor(width, height) {
     this._uis = new Map([]);
     let wrapper = document.getElementById("wrapper");
-    this._addCanvas(wrapper, width, height, this._boxClicked);
+    this._addCanvas(wrapper, width, height);
   }
 
   _addButton(parent, label, accesskey, callback) {
@@ -20,17 +23,23 @@ export default class Ui {
     parent.appendChild(btn);
   }
 
-  _addCanvas(parent, width, height, callback) {
+  _addCanvas(parent, width, height) {
     this._box = document.createElement("canvas");
     this._box.setAttribute("class", "ground");
-    this._box.setAttribute("width", ObjectUi.size * width);
-    this._box.setAttribute("height", ObjectUi.size * height);
-    this._box.addEventListener('click', callback);
+    this._box.setAttribute("width", width * PIXEL_SIZE);
+    this._box.setAttribute("height", height * PIXEL_SIZE);
     parent.appendChild(this._box);
   }
 
-  _boxClicked(event) {
-    console.log(event);
+  getObjectIdAt(pos) {
+    let result = undefined;
+    this._uis.forEach(function(ui, id) {
+      let distance = pos.distanceTo(ui.pos);
+      if (distance < 20) {
+        result = id;
+      }
+    });
+    return result;
   }
 
   draw(events) {
@@ -51,6 +60,8 @@ export default class Ui {
         case Event.GONE:
           this._handleGone(event.id, event.payload);
           break;
+        case Event.ACTIVE:
+          this._handleActive(event.id, event.payload);
         default:
           console.log('unknown event type: ' + event.type);
       }
@@ -73,7 +84,7 @@ export default class Ui {
   _handleMove(id, payload) {
     let ui = this._uis.get(id);
     if (ui) {
-      let pos = payload['pos'];
+      let pos = Ui.toScreen(payload['pos']);
       console.log('moved ui: id=' + id + ' from ' + ui.pos + ' to ' + pos);
       ui.pos = pos;
     }
@@ -81,7 +92,7 @@ export default class Ui {
 
   _handleCreate(id, payload) {
     let type = payload['type'];
-    let pos = payload['pos'];
+    let pos = Ui.toScreen(payload['pos']);
     console.log('created ui: id=' + id + ' type=' + type + '@' + pos);
     switch(type) {
       case 'AntModel':
@@ -98,5 +109,22 @@ export default class Ui {
   _handleGone(id, payload) {
     console.log('detroying ui: id=' + id);
     this._uis.delete(id);
+  }
+
+  _handleActive(id, payload) {
+    let ui = this._uis.get(id);
+    if (ui) {
+      let active = payload['active'];
+      console.log('activavet ui: id=' + id + ' active=' + active);
+      ui.active = active;
+    }
+  }
+
+  static toScreen(pos) {
+    return new Position(PIXEL_SIZE * pos.x, PIXEL_SIZE * pos.y);
+  }
+
+  static toModel(pos) {
+    return new Position(pos.x / PIXEL_SIZE, pos.y / PIXEL_SIZE);
   }
 };

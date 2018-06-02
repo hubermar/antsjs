@@ -2,6 +2,7 @@
 
 import Model from './Model.js';
 import Ui from './Ui.js';
+import Position from './Position.js';
 
 Function.prototype.Timer = function (interval, calls, onend) {
   var count = 0,
@@ -42,7 +43,7 @@ let app = (function() {
 
   function _init() {
     _antsModel = new Model();
-    _antsUi = new Ui(_antsModel.width, _antsModel.height);
+    _antsUi = new Ui(Model.WIDTH, Model.HEIGHT);
   }
 
   function _startStop() {
@@ -72,15 +73,22 @@ let app = (function() {
       case 's':
         _startStop();
         break;
-      case 'a':
-        _antsModel.addAnt();
-        break;
+      default:
+        _antsModel.handleKey(event);
     }
-  }
+  };
+
+  function _handleClick(event) {
+    let pos = new Position(event.clientX, event.clientY);
+    console.log("mouse clicked@" + pos.toString());
+    let objectId = _antsUi.getObjectIdAt(pos);
+    _antsModel.setActiveModel(objectId);
+  };
 
   return {
     init: _init,
-    handleKeypress: _handleKey
+    handleKeypress: _handleKey,
+    handleMouseClick: _handleClick
   };
 })();
 
@@ -90,4 +98,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 window.addEventListener('keypress', (event) => { 
   app.handleKeypress(event);
+});
+
+window.addEventListener('click', (event) => { 
+  app.handleMouseClick(event);
 });
