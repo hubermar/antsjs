@@ -5,8 +5,6 @@ import HillUi from './HillUi.js';
 import Event from './Event.js';
 import Position from './Position.js';
 
-const PIXEL_SIZE = 3;
-
 export default class Ui {
 
   constructor(width, height) {
@@ -26,8 +24,8 @@ export default class Ui {
   _addCanvas(parent, width, height) {
     this._box = document.createElement("canvas");
     this._box.setAttribute("class", "ground");
-    this._box.setAttribute("width", width * PIXEL_SIZE);
-    this._box.setAttribute("height", height * PIXEL_SIZE);
+    this._box.setAttribute("width", width * Position.PIXEL_SIZE);
+    this._box.setAttribute("height", height * Position.PIXEL_SIZE);
     parent.appendChild(this._box);
   }
 
@@ -70,9 +68,7 @@ export default class Ui {
 
   _drawUis() {
     let context = this._box.getContext("2d");
-    /*context.fillStyle = 'black';
-    context.fillRect(0, 0, this._box.width, this._box.height);
-    */context.clearRect(0, 0, this._box.width, this._box.height);
+    context.clearRect(0, 0, this._box.width, this._box.height);
     context.beginPath();
     let uis = Array.from(this._uis.values());
     uis.sort((l, r) => { return l.z - r.z; });
@@ -84,22 +80,23 @@ export default class Ui {
   _handleMove(id, payload) {
     let ui = this._uis.get(id);
     if (ui) {
-      let pos = Ui.toScreen(payload['pos']);
-      console.log('moved ui: id=' + id + ' from ' + ui.pos + ' to ' + pos);
+      let pos = payload['pos'].toScreen();
+      //console.log('moved ui: id=' + id + ' from ' + ui.pos + ' to ' + pos);
       ui.pos = pos;
     }
   }
 
   _handleCreate(id, payload) {
     let type = payload['type'];
-    let pos = Ui.toScreen(payload['pos']);
+    let pos = payload['pos'].toScreen();
+    let color = payload['color'];
     console.log('created ui: id=' + id + ' type=' + type + '@' + pos);
     switch(type) {
       case 'AntModel':
-        this._uis.set(id, new AntUi(pos));
+        this._uis.set(id, new AntUi(pos, color));
         break;
       case 'HillModel':
-        this._uis.set(id, new HillUi(pos));
+        this._uis.set(id, new HillUi(pos, color));
         break;
       default:
         console.log('unknown model type: ' + model)
@@ -118,13 +115,5 @@ export default class Ui {
       console.log('activavet ui: id=' + id + ' active=' + active);
       ui.active = active;
     }
-  }
-
-  static toScreen(pos) {
-    return new Position(PIXEL_SIZE * pos.x, PIXEL_SIZE * pos.y);
-  }
-
-  static toModel(pos) {
-    return new Position(pos.x / PIXEL_SIZE, pos.y / PIXEL_SIZE);
   }
 };

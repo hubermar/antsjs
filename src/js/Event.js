@@ -39,8 +39,8 @@ export default class Event {
         return ACTIVE;
     }
 
-    static newCreate(id, type, pos) {
-        let payload = {'type' : type, 'pos' : pos};
+    static newCreate(id, type, pos, color) {
+        let payload = {'type' : type, 'pos' : pos, 'color' : color};
         return new Event(CREATE, id, payload);
     }
 

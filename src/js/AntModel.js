@@ -7,11 +7,15 @@ export default class AntModel extends ObjectModel {
 
     constructor(hill) {
       super(hill.pos);
-      this._home = hill;
+      this._hill = hill;
       this._direction = Direction.EAST;
       this._speed = 1;
       this._energy = 100;
       this._consumption = 1;
+    }
+
+    get color() {
+      return this._hill.color;
     }
 
     update(events) {
@@ -20,7 +24,7 @@ export default class AntModel extends ObjectModel {
       this._energy = this._energy - 1;
       this.pos = newPos;
       events.add(Event.newMove(this.id, newPos));
-      console.log(this.toString());
+      //console.log(this.toString());
     }
 
     get energy() {

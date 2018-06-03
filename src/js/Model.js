@@ -13,15 +13,31 @@ export default class Model {
     this._events = new Set();
   }
 
-  setActiveModel(objectId) {
+  handleClick(pos) {
+    let obj = this._findObjectAt(pos);
+    if (obj) {
+      this._setActiveModel(obj.id);
+    }
+  }
+
+  _findObjectAt(pos) {
+    let result = undefined;
+    this._objects.forEach(function(obj) {
+      let distance = pos.distanceTo(obj.pos);
+      if (distance < 20) {
+        result = obj;
+      }
+    });
+    return result;
+  }
+
+  _setActiveModel(objectId) {
     this._objects.forEach((obj) => {
       let oldActive = obj.active;
-      if (obj.id == objectId) {
-        obj.active = true;
-      }
+      obj.active = (obj.id == objectId);
       let newActive = obj.active;
       if (oldActive != newActive) {
-        this._events.add(Event.newActive(objectId, newActive));
+        this._events.add(Event.newActive(obj.id, newActive));
       }
     });
   }
@@ -60,13 +76,14 @@ export default class Model {
       break;
     case 'h':
       let hillPos = new Position(Math.random() * Model.WIDTH, Math.random() * Model.HEIGHT);
-      this._addHill(hillPos);
+      let hillColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+      this._addHill(hillPos, hillColor);
       break;
     }
   };
 
-  _addHill(pos) {
-    let hill = new HillModel(pos);
+  _addHill(pos, color) {
+    let hill = new HillModel(pos, color);
     this._addObject(hill);
     return hill;
   }
@@ -79,7 +96,7 @@ export default class Model {
 
   _addObject(model) {
     this._objects.set(model.id, model);
-    this._events.add(Event.newCreate(model.id, model.constructor.name, model.pos));
+    this._events.add(Event.newCreate(model.id, model.constructor.name, model.pos, model.color));
   }
 
   static get HEIGHT() {

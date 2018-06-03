@@ -1,3 +1,5 @@
+const PIXEL_SIZE = 3;
+
 export default class Position {
   
   constructor(x, y) {
@@ -32,5 +34,17 @@ export default class Position {
 
   static equals(left, right) {
     return left.x == right.x && left.y == right.y;
+  }
+
+  toScreen(pos) {
+    return new Position(PIXEL_SIZE * this.x, PIXEL_SIZE * this.y);
+  }
+
+  toModel(pos) {
+    return new Position(this.x / PIXEL_SIZE, this.y / PIXEL_SIZE);
+  }
+
+  static get PIXEL_SIZE() {
+    return PIXEL_SIZE;
   }
 };

@@ -81,8 +81,7 @@ let app = (function() {
   function _handleClick(event) {
     let pos = new Position(event.clientX, event.clientY);
     console.log("mouse clicked@" + pos.toString());
-    let objectId = _antsUi.getObjectIdAt(pos);
-    _antsModel.setActiveModel(objectId);
+    _antsModel.handleClick(pos.toModel());
   };
 
   return {
