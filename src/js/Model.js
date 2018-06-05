@@ -11,12 +11,22 @@ export default class Model {
   constructor() {
     this._objects = new Map();
     this._events = new Set();
+    this._mode = undefined;
   }
 
   handleClick(pos) {
     let obj = this._findObjectAt(pos);
     if (obj) {
       this._setActiveModel(obj.id);
+      return;
+    }      
+
+    switch (this._mode) {
+    case 'hill':
+      let hillColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+      this._addHill(pos, hillColor);
+      break;
+    default:
     }
   }
 
@@ -68,6 +78,7 @@ export default class Model {
   handleKey(event) {
     switch (event.key) {
     case 'a':
+      this._changeMode("ant");
       this._objects.forEach((obj) => {
         if (obj.active && obj.constructor.name == 'HillModel') {
           this._addAnt(obj);
@@ -75,12 +86,16 @@ export default class Model {
       });
       break;
     case 'h':
-      let hillPos = new Position(Math.random() * Model.WIDTH, Math.random() * Model.HEIGHT);
-      let hillColor = '#'+Math.floor(Math.random()*16777215).toString(16);
-      this._addHill(hillPos, hillColor);
+    this._changeMode("hill");
+    this._events.add(Event.newMode('hill'));
       break;
     }
   };
+
+  _changeMode(newMode) {
+    this._mode = newMode;
+    this._events.add(Event.newMode(newMode));
+  }
 
   _addHill(pos, color) {
     let hill = new HillModel(pos, color);

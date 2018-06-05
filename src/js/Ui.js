@@ -42,7 +42,10 @@ export default class Ui {
 
   draw(events) {
     this._processEvents(events)
-    this._drawUis();
+    let context = this._box.getContext("2d");
+    context.clearRect(0, 0, this._box.width, this._box.height);
+    this._drawUis(context);
+    this._drawMode(context);
   }
 
   _processEvents(events) {
@@ -60,21 +63,28 @@ export default class Ui {
           break;
         case Event.ACTIVE:
           this._handleActive(event.id, event.payload);
+        case Event.MODE:
+          this._handleMode(event.payload);
         default:
           console.log('unknown event type: ' + event.type);
       }
     });
   }
 
-  _drawUis() {
-    let context = this._box.getContext("2d");
-    context.clearRect(0, 0, this._box.width, this._box.height);
+  _drawUis(context) {
     context.beginPath();
     let uis = Array.from(this._uis.values());
     uis.sort((l, r) => { return l.z - r.z; });
     uis.forEach((ui) => {
       ui.draw(context);
     });
+  }
+
+  _drawMode(context) {
+    context.beginPath();
+    context.fillStyle = '#ffffff';
+    context.font = "30px Arial";
+    context.fillText(this._mode,10,50);
   }
 
   _handleMove(id, payload) {
@@ -115,5 +125,10 @@ export default class Ui {
       console.log('activavet ui: id=' + id + ' active=' + active);
       ui.active = active;
     }
+  }
+
+  _handleMode(payload) {
+    let mode = payload['mode'];
+    this._mode = mode;
   }
 };

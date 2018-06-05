@@ -2,6 +2,7 @@ export const CREATE = 'event_create';
 export const MOVE = 'event_move';
 export const GONE = 'event_gone';
 export const ACTIVE = 'event_active';
+export const MODE = 'event_mode';
 
 export default class Event {
 
@@ -39,6 +40,10 @@ export default class Event {
         return ACTIVE;
     }
 
+    static get MODE() {
+        return MODE;
+    }
+
     static newCreate(id, type, pos, color) {
         let payload = {'type' : type, 'pos' : pos, 'color' : color};
         return new Event(CREATE, id, payload);
@@ -57,5 +62,10 @@ export default class Event {
     static newActive(id, active) {
         let payload = {'active': active};
         return new Event(ACTIVE, id, payload);
+    }
+
+    static newMode(mode) {
+        let payload = {'mode': mode};
+        return new Event(MODE, undefined, payload);
     }
 }
