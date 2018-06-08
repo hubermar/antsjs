@@ -1,0 +1,38 @@
+== Ants
+
+=== basic architecture
+mvc pattern with clean separation of ui and model. (controller as needed)
+
+=== game logic
+* hill
+- home of ants
+- created by user
+- has initial stock of food
+- destroyed by ???
+
+* ant
+- is born in a hill (costs foods to "produced" it)
+- searches for food when it leaves the hill
+- each move consumes some energy
+- energy is restored when returned to the hill (consumes food)
+- dies when all energy is gone (automatic return to hill at min energy?)
+- can carry things back to the hill 
+
+* food
+- is created and located manually 
+- can be found on the playground
+- one location may have multiple food entities (quantity)
+
+=== open items
+==== bidirectional event handling
+* ui events 
+- triggered by user input (mouse, key)
+- preprocessing in ui, but no effect
+
+* model events 
+- triggered by timer as result of ui events
+
+* collision detection
+- consider object size
+- performance!
+
