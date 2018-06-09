@@ -36,12 +36,16 @@ export default class Position {
     return left.x == right.x && left.y == right.y;
   }
 
-  toScreen(pos) {
+  toScreen() {
     return new Position(PIXEL_SIZE * this.x, PIXEL_SIZE * this.y);
   }
 
-  toModel(pos) {
+  toModel() {
     return new Position(this.x / PIXEL_SIZE, this.y / PIXEL_SIZE);
+  }
+
+  intersects(pos) {
+    return this._pos.distanceTo(pos) < 5;
   }
 
   static get PIXEL_SIZE() {

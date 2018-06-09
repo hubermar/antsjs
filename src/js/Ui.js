@@ -2,6 +2,7 @@ import Model from './Model.js';
 import ObjectUi from './ObjectUi.js';
 import AntUi from './AntUi.js';
 import HillUi from './HillUi.js';
+import FoodUi from './FoodUi.js';
 import Event from './Event.js';
 import Position from './Position.js';
 
@@ -29,18 +30,7 @@ export default class Ui {
     parent.appendChild(this._box);
   }
 
-  getObjectIdAt(pos) {
-    let result = undefined;
-    this._uis.forEach(function(ui, id) {
-      let distance = pos.distanceTo(ui.pos);
-      if (distance < 20) {
-        result = id;
-      }
-    });
-    return result;
-  }
-
-  draw(events) {
+  handleEvents(events) {
     this._processEvents(events)
     let context = this._box.getContext("2d");
     context.clearRect(0, 0, this._box.width, this._box.height);
@@ -49,20 +39,20 @@ export default class Ui {
   }
 
   _processEvents(events) {
-    console.log('received ' + events.size + ' model events');
+    console.log('received ' + events.length + ' model events');
     events.forEach((event) => {
       switch(event.type) {
-        case Event.CREATE:
-          this._handleCreate(event.id, event.payload);
+        case Event.CREATED:
+          this._handleCreated(event.payload);
           break;
         case Event.MOVE:
-          this._handleMove(event.id, event.payload);
+          this._handleMove(event.payload);
           break;
         case Event.GONE:
-          this._handleGone(event.id, event.payload);
+          this._handleGone(event.payload);
           break;
         case Event.ACTIVE:
-          this._handleActive(event.id, event.payload);
+          this._handleActive(event.payload);
         case Event.MODE:
           this._handleMode(event.payload);
         default:
@@ -87,7 +77,8 @@ export default class Ui {
     context.fillText(this._mode,10,50);
   }
 
-  _handleMove(id, payload) {
+  _handleMove(payload) {
+    let id = payload['id'];
     let ui = this._uis.get(id);
     if (ui) {
       let pos = payload['pos'].toScreen();
@@ -96,7 +87,8 @@ export default class Ui {
     }
   }
 
-  _handleCreate(id, payload) {
+  _handleCreated(payload) {
+    let id = payload['id'];
     let type = payload['type'];
     let pos = payload['pos'].toScreen();
     let color = payload['color'];
@@ -108,17 +100,22 @@ export default class Ui {
       case 'HillModel':
         this._uis.set(id, new HillUi(pos, color));
         break;
+      case 'FoodModel':
+        this._uis.set(id, new FoodUi(pos, color));
+        break;
       default:
-        console.log('unknown model type: ' + model)
+        console.log('unknown model type: ' + type)
     }
   }
 
-  _handleGone(id, payload) {
+  _handleGone(payload) {
+    let id = payload['id'];
     console.log('detroying ui: id=' + id);
     this._uis.delete(id);
   }
 
-  _handleActive(id, payload) {
+  _handleActive(payload) {
+    let id = payload['id'];
     let ui = this._uis.get(id);
     if (ui) {
       let active = payload['active'];
@@ -127,8 +124,47 @@ export default class Ui {
     }
   }
 
-  _handleMode(payload) {
-    let mode = payload['mode'];
-    this._mode = mode;
+  handleKey(key) {
+    switch (key) {
+    case 'a':
+      this._mode = "ant";
+      /*
+      this._objects.forEach((obj) => {
+        if (obj.active && obj.constructor.name == 'HillModel') {
+          this._addAnt(obj);
+        };
+      });
+      */
+      break;
+    case 'h':
+      this._mode = "hill";
+      break;
+    case 'f':
+      this._mode = "food";
+      break;
+    }
+  };
+
+  handleClick(pos) {
+    let events = new Array();
+    let obj = this._findObjectAt(pos);
+    if (obj) {
+      this._setActiveModel(obj.id);
+    } else {
+      if (this._mode) {
+        events.push(Event.newCreate(this._mode, pos.toModel()))
+      }
+    }
+    return events;
+  }
+  
+  _findObjectAt(pos) {
+    let result = undefined;
+    this._uis.forEach((obj) => {
+      if (obj.pos.distanceTo(pos) < 5) {
+        result = obj;
+      }
+    });
+    return result;
   }
 };

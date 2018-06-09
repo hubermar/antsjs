@@ -1,0 +1,31 @@
+@startuml
+actor user as "User" order 10
+participant ui as "User interface" order 20
+participant ctrl as "Controller" order 25
+participant model as "Ant Model" order 30
+control timer as "Game clock" order  40
+
+note left: Concurrency???
+
+group ui event handling
+user -> ui: key input
+user -> ui: mouse input
+ui -> ctrl: events
+note right: usually a single event e.g. object selected
+ctrl -> model: handle all events
+ctrl <-- model: resulting + stored events
+ctrl -> ui: handle all events
+end
+
+group model event handling
+timer -> ctrl: tick
+ctrl -> model: handle tick
+model -> model: handle tick [*submodels]
+model -> ctrl: events
+note left: collected events from submodels
+ctrl -> ui: handle all events
+note right: no resulting events expected...
+end
+
+
+@enduml

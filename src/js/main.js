@@ -51,44 +51,59 @@ let app = (function() {
       _running = false;
     } else {
       _running = true;
-      _mainLoop.Timer(TIMESTEP, Infinity, _completed);
+      _handleTick.Timer(TIMESTEP, Infinity, _completed);
     }
   }
 
   function _completed() {
   }
 
-  function _mainLoop(timestamp) {
+  function _doEvents(producer, consumer) {
+    let events = producer();
+    if (events) {
+      events.forEach(event => {
+        return consumer(event);
+      });
+    }
+  }
+
+  function _handleTick(timestamp) {
     if (!_running) {
       return false;
     }
-    let events = _antsModel.update();
-    _antsUi.draw(events);
+    let tickEvents = _antsModel.update();
+    _antsUi.handleEvents(tickEvents);
     return true;
-  };
+  }
 
   function _handleKey(event) {
-    console.log("key " + event.key + " (" + event.keycode + ") pressed");
-    switch (event.key) {
-      case 's':
-        _startStop();
-        break;
-      default:
-        _antsModel.handleKey(event);
+    let key = event.key;
+    console.log("key [" + key + "] pressed");
+    switch (key) {
+    case 's':
+      _startStop();
+      break;
+    default:
+      let keyEvents = _antsUi.handleKey(key);
+      let modelEvents = _antsModel.handleEvents(keyEvents);
+      _antsUi.handleEvents(modelEvents);
     }
-  };
+  }
 
   function _handleClick(event) {
     let pos = new Position(event.clientX, event.clientY);
     console.log("mouse clicked@" + pos.toString());
-    _antsModel.handleClick(pos.toModel());
-  };
+    let clickEvents = _antsUi.handleClick(pos);
+    let modelEvents = _antsModel.handleEvents(clickEvents);
+    _antsUi.handleEvents(modelEvents);
+  }
 
   return {
     init: _init,
     handleKeypress: _handleKey,
     handleMouseClick: _handleClick
-  };
+  }
+
 })();
 
 window.addEventListener('DOMContentLoaded', (event) => {

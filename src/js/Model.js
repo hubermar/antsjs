@@ -1,6 +1,7 @@
 import Position from "./Position.js";
 import HillModel from "./HillModel.js";
 import AntModel from "./AntModel.js";
+import FoodModel from "./FoodModel.js";
 import Event from "./Event.js";
 
 const GROUND_WIDTH = 400;
@@ -10,35 +11,7 @@ export default class Model {
 
   constructor() {
     this._objects = new Map();
-    this._events = new Set();
     this._mode = undefined;
-  }
-
-  handleClick(pos) {
-    let obj = this._findObjectAt(pos);
-    if (obj) {
-      this._setActiveModel(obj.id);
-      return;
-    }      
-
-    switch (this._mode) {
-    case 'hill':
-      let hillColor = '#'+Math.floor(Math.random()*16777215).toString(16);
-      this._addHill(pos, hillColor);
-      break;
-    default:
-    }
-  }
-
-  _findObjectAt(pos) {
-    let result = undefined;
-    this._objects.forEach(function(obj) {
-      let distance = pos.distanceTo(obj.pos);
-      if (distance < 20) {
-        result = obj;
-      }
-    });
-    return result;
   }
 
   _setActiveModel(objectId) {
@@ -52,14 +25,45 @@ export default class Model {
     });
   }
 
+  handleEvents(events) {
+    let returnEvents = new Array();
+    if (events) {
+      events.forEach((event) => {
+        let eventEvents = this.handleEvent(event);
+        eventEvents.forEach((event) => {
+          returnEvents.push(event);
+        });
+      });
+    }
+    return returnEvents;
+  }
+
+  handleEvent(event) {
+    let events = new Array();
+    switch (event.type) {
+    case Event.CREATE:
+      events.push(this._createModel(event.payload['name'], event.payload['pos']));
+      break;
+    default:
+      console.log('received ' + event.toString());
+    }
+    return events;
+  }
+
+  _createModel(name, pos) {
+    switch (name) {
+    case 'hill':
+      let hillColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+      return this._addHill(pos, hillColor);
+      break;
+    default:
+      console.log("create " + name + ": to be implemented");      
+    }
+  }
+
   update() {
     console.log("Model.update()");
     let allEvents = new Set();
-    // add my events
-    this._events.forEach((event) => {
-      allEvents.add(event);
-    });
-    this._events.clear();
     // update all models
     this._objects.forEach((obj) => {
       obj.update(allEvents);
@@ -75,43 +79,24 @@ export default class Model {
     return allEvents;
   }
 
-  handleKey(event) {
-    switch (event.key) {
-    case 'a':
-      this._changeMode("ant");
-      this._objects.forEach((obj) => {
-        if (obj.active && obj.constructor.name == 'HillModel') {
-          this._addAnt(obj);
-        };
-      });
-      break;
-    case 'h':
-    this._changeMode("hill");
-    this._events.add(Event.newMode('hill'));
-      break;
-    }
-  };
-
-  _changeMode(newMode) {
-    this._mode = newMode;
-    this._events.add(Event.newMode(newMode));
-  }
-
   _addHill(pos, color) {
     let hill = new HillModel(pos, color);
-    this._addObject(hill);
-    return hill;
+    return this._addObject(hill);
   }
 
   _addAnt(hill) {
       let ant = new AntModel(hill);
-      this._addObject(ant);
-      return ant;
+      return this._addObject(ant);
+  }
+
+  _addFood(pos) {
+    let food = new FoodModel(pos);
+    return this._addObject(food);
   }
 
   _addObject(model) {
     this._objects.set(model.id, model);
-    this._events.add(Event.newCreate(model.id, model.constructor.name, model.pos, model.color));
+    return Event.newCreated(model.id, model.constructor.name, model.pos, model.color);
   }
 
   static get HEIGHT() {

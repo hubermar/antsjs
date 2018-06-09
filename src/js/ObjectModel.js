@@ -17,6 +17,10 @@ export default class ObjectModel {
     this._pos = value;
   }
 
+  intersect(pos) {
+    return this._pos.distanceTo(pos) < 2;
+  }
+
   update(events) {}
 };
 
