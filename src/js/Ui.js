@@ -32,14 +32,22 @@ export default class Ui {
 
   handleEvents(events) {
     this._processEvents(events)
+    this._draw();
+  }
+
+  _draw() {
     let context = this._box.getContext("2d");
     context.clearRect(0, 0, this._box.width, this._box.height);
     this._drawUis(context);
     this._drawMode(context);
   }
 
+  _handleMode(mode) {
+    this._mode = mode;
+    this._draw();
+  }
+
   _processEvents(events) {
-    console.log('received ' + events.length + ' model events');
     events.forEach((event) => {
       switch(event.type) {
         case Event.CREATED:
@@ -53,8 +61,6 @@ export default class Ui {
           break;
         case Event.ACTIVE:
           this._handleActive(event.payload);
-        case Event.MODE:
-          this._handleMode(event.payload);
         default:
           console.log('unknown event type: ' + event.type);
       }
@@ -114,8 +120,7 @@ export default class Ui {
     this._uis.delete(id);
   }
 
-  _handleActive(payload) {
-    let id = payload['id'];
+  _handleActive(id) {
     let ui = this._uis.get(id);
     if (ui) {
       let active = payload['active'];
@@ -127,29 +132,33 @@ export default class Ui {
   handleKey(key) {
     switch (key) {
     case 'a':
-      this._mode = "ant";
-      /*
-      this._objects.forEach((obj) => {
-        if (obj.active && obj.constructor.name == 'HillModel') {
-          this._addAnt(obj);
-        };
-      });
-      */
+      this._handleMode('ant');
       break;
     case 'h':
-      this._mode = "hill";
-      break;
+      this._handleMode('hill');
+     break;
     case 'f':
-      this._mode = "food";
+      this._handleMode('food');
       break;
     }
+    return new Array();
   };
 
   handleClick(pos) {
     let events = new Array();
     let obj = this._findObjectAt(pos);
     if (obj) {
-      this._setActiveModel(obj.id);
+      console.log('click in mode=' + this._mode + ' on obj=' + obj.constructor.name);
+      //      this._handleActive(obj.id);
+      switch (this._mode) {
+        case 'ant':
+          if (obj.constructor.name == 'HillUi') {
+            events.push(Event.newCreate(this._mode, pos.toModel()));
+          }
+          break;
+        default:
+          console.log('click ignored');
+      }
     } else {
       if (this._mode) {
         events.push(Event.newCreate(this._mode, pos.toModel()))
@@ -161,8 +170,12 @@ export default class Ui {
   _findObjectAt(pos) {
     let result = undefined;
     this._uis.forEach((obj) => {
-      if (obj.pos.distanceTo(pos) < 5) {
-        result = obj;
+      if (!result) {
+        let distance = obj.pos.distanceTo(pos); 
+        console.log('distance to ' + obj.constructor.name + " is " + distance);
+        if (distance < 25.0) {
+          result = obj;
+        }
       }
     });
     return result;

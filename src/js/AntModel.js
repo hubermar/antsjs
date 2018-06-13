@@ -23,7 +23,7 @@ export default class AntModel extends ObjectModel {
       let newPos = AntModel.calcPosition(this.pos, this._direction);
       this._energy = this._energy - 1;
       this.pos = newPos;
-      events.add(Event.newMove(this.id, newPos));
+      events.push(Event.newMove(this.id, newPos));
       //console.log(this.toString());
     }
 

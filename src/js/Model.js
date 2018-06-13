@@ -14,27 +14,14 @@ export default class Model {
     this._mode = undefined;
   }
 
-  _setActiveModel(objectId) {
-    this._objects.forEach((obj) => {
-      let oldActive = obj.active;
-      obj.active = (obj.id == objectId);
-      let newActive = obj.active;
-      if (oldActive != newActive) {
-        this._events.add(Event.newActive(obj.id, newActive));
-      }
-    });
-  }
-
   handleEvents(events) {
     let returnEvents = new Array();
-    if (events) {
-      events.forEach((event) => {
-        let eventEvents = this.handleEvent(event);
-        eventEvents.forEach((event) => {
-          returnEvents.push(event);
-        });
+    events.forEach((event) => {
+      let eventEvents = this.handleEvent(event);
+      eventEvents.forEach((event2) => {
+        returnEvents.push(event2);
       });
-    }
+    });
     return returnEvents;
   }
 
@@ -42,7 +29,10 @@ export default class Model {
     let events = new Array();
     switch (event.type) {
     case Event.CREATE:
-      events.push(this._createModel(event.payload['name'], event.payload['pos']));
+      let created = this._createModel(event.payload);
+      if (created) {
+        events.push(created);
+      }
       break;
     default:
       console.log('received ' + event.toString());
@@ -50,20 +40,37 @@ export default class Model {
     return events;
   }
 
-  _createModel(name, pos) {
+  _createModel(payload) {
+    let name = payload['name'];
+    let pos = payload['pos'];
     switch (name) {
     case 'hill':
       let hillColor = '#'+Math.floor(Math.random()*16777215).toString(16);
       return this._addHill(pos, hillColor);
+    case 'ant':
+      let home = this._findObjectAt(pos);
+      if (home) {
+        return this._addAnt(home);
+      }
       break;
     default:
       console.log("create " + name + ": to be implemented");      
     }
   }
 
+  _findObjectAt(pos) {
+    let result = undefined;
+    this._objects.forEach(function(obj) {
+      let distance = pos.distanceTo(obj.pos);
+      if (distance < 20) {
+        result = obj;
+      }
+    });
+    return result;
+  }
+    
   update() {
-    console.log("Model.update()");
-    let allEvents = new Set();
+    let allEvents = new Array();
     // update all models
     this._objects.forEach((obj) => {
       obj.update(allEvents);
@@ -72,10 +79,9 @@ export default class Model {
     this._objects.forEach((obj) => {
       if (obj.energy < 1) {
         this._objects.delete(obj.id);
-        allEvents.add(Event.newGone(obj.id));
+        allEvents.push(Event.newGone(obj.id));
       };
     });
-    console.log("Model.update() finished.");
     return allEvents;
   }
 

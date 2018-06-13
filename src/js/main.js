@@ -4,33 +4,6 @@ import Model from './Model.js';
 import Ui from './Ui.js';
 import Position from './Position.js';
 
-Function.prototype.Timer = function (interval, calls, onend) {
-  var count = 0,
-      payloadFunction = this,
-      startTime = new Date();
-
-  var callbackFunction = function () {
-    return payloadFunction(startTime, count);
-  };
-
-  var endFunction = function () {
-    if (onend) {
-      onend(startTime, count, calls);
-    }
-  };
-
-  var timerFunction = function () {
-    count++;
-    if (count < calls && callbackFunction() != false) {
-      window.setTimeout(timerFunction, interval);
-    } else {
-      endFunction();
-    }
-  };
-
-  timerFunction();
-};
-
 let app = (function() {
 
   const FPS = 2.0;
@@ -49,13 +22,11 @@ let app = (function() {
   function _startStop() {
     if (_running) {
       _running = false;
+      window.clearTimeout();
     } else {
       _running = true;
-      _handleTick.Timer(TIMESTEP, Infinity, _completed);
+      window.setInterval(_handleTick, TIMESTEP);
     }
-  }
-
-  function _completed() {
   }
 
   function _doEvents(producer, consumer) {
@@ -67,10 +38,11 @@ let app = (function() {
     }
   }
 
-  function _handleTick(timestamp) {
+  function _handleTick() {
     if (!_running) {
       return false;
     }
+    console.log("tick received");
     let tickEvents = _antsModel.update();
     _antsUi.handleEvents(tickEvents);
     return true;
@@ -79,20 +51,14 @@ let app = (function() {
   function _handleKey(event) {
     let key = event.key;
     console.log("key [" + key + "] pressed");
-    switch (key) {
-    case 's':
-      _startStop();
-      break;
-    default:
-      let keyEvents = _antsUi.handleKey(key);
-      let modelEvents = _antsModel.handleEvents(keyEvents);
-      _antsUi.handleEvents(modelEvents);
-    }
+    let keyEvents = _antsUi.handleKey(key);
+    let modelEvents = _antsModel.handleEvents(keyEvents);
+    _antsUi.handleEvents(modelEvents);
   }
 
   function _handleClick(event) {
     let pos = new Position(event.clientX, event.clientY);
-    console.log("mouse clicked@" + pos.toString());
+    console.log("mouse clicked at " + pos.toString());
     let clickEvents = _antsUi.handleClick(pos);
     let modelEvents = _antsModel.handleEvents(clickEvents);
     _antsUi.handleEvents(modelEvents);
@@ -100,14 +66,21 @@ let app = (function() {
 
   return {
     init: _init,
+    start: _startStop,
+    stop: _startStop,
     handleKeypress: _handleKey,
     handleMouseClick: _handleClick
   }
 
 })();
 
-window.addEventListener('DOMContentLoaded', (event) => {
+window.addEventListener('load', (event) => {
   app.init();
+  app.start();
+});
+
+window.addEventListener('unload', (event) => {
+  app.stop();
 });
 
 window.addEventListener('keypress', (event) => { 

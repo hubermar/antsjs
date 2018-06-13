@@ -35,10 +35,6 @@ export default class Event {
         return GONE;
     }
 
-    static get ACTIVE() {
-        return ACTIVE;
-    }
-
     static newCreate(name, pos) {
         let payload = {'name' : name, 'pos' : pos};
         return new Event(CREATE, payload);
@@ -57,11 +53,6 @@ export default class Event {
     static newMove(id, pos) {
         let payload = {'id': id, 'pos': pos};
         return new Event(MOVE, payload);
-    }
-
-    static newActive(id, active) {
-        let payload = {'id': id, 'active': active};
-        return new Event(ACTIVE, payload);
     }
 
     toString() {
