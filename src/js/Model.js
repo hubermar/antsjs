@@ -53,6 +53,9 @@ export default class Model {
         return this._addAnt(home);
       }
       break;
+    case 'food':
+      let quantity = Math.floor(Math.random()*10);
+      return this._addFood(pos, quantity);
     default:
       console.log("create " + name + ": to be implemented");      
     }
@@ -95,8 +98,8 @@ export default class Model {
       return this._addObject(ant);
   }
 
-  _addFood(pos) {
-    let food = new FoodModel(pos);
+  _addFood(pos, quantity) {
+    let food = new FoodModel(pos, quantity);
     return this._addObject(food);
   }
 
