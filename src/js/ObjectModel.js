@@ -22,6 +22,8 @@ export default class ObjectModel {
   }
 
   update(events) {}
+
+  handleCollisionWith(other) {}
 };
 
 ObjectModel.ID = 0;

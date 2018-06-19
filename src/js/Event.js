@@ -1,8 +1,9 @@
-export const CREATE = 'event_create';
+export const CLICK = 'event_click';
 export const CREATED = 'event_created';
 export const MOVE = 'event_move';
 export const GONE = 'event_gone';
 export const ACTIVE = 'event_active';
+export const COLLISION = 'event_collision';
 
 export default class Event {
 
@@ -19,8 +20,8 @@ export default class Event {
         return this._payload;
     }
 
-    static get CREATE() {
-        return CREATE;
+    static get CLICK() {
+        return CLICK;
     }
 
     static get CREATED() {
@@ -35,13 +36,17 @@ export default class Event {
         return GONE;
     }
 
-    static newCreate(name, pos) {
-        let payload = {'name' : name, 'pos' : pos};
-        return new Event(CREATE, payload);
+    static get COLLISION() {
+        return COLLISION;
     }
 
-    static newCreated(id, type, pos, color) {
-        let payload = {'id': id, 'type': type, 'pos': pos, 'color': color};
+    static newClick(mode, pos) {
+        let payload = {'mode' : mode, 'pos' : pos};
+        return new Event(CLICK, payload);
+    }
+
+    static newCreated(id, type, pos, color, properties) {
+        let payload = {'id': id, 'type': type, 'pos': pos, 'color': color, 'properties': properties};
         return new Event(CREATED, payload);
     }
 
@@ -53,6 +58,11 @@ export default class Event {
     static newMove(id, pos) {
         let payload = {'id': id, 'pos': pos};
         return new Event(MOVE, payload);
+    }
+
+    static newCollision(active, passive) {
+        let payload = {'active': active, 'passive': passive};
+        return new Event(COLLISION, payload);
     }
 
     toString() {

@@ -98,6 +98,7 @@ export default class Ui {
     let type = payload['type'];
     let pos = payload['pos'].toScreen();
     let color = payload['color'];
+    let properties = payload['properties'];
     console.log('created ui: id=' + id + ' type=' + type + '@' + pos);
     switch(type) {
       case 'AntModel':
@@ -107,7 +108,7 @@ export default class Ui {
         this._uis.set(id, new HillUi(pos, color));
         break;
       case 'FoodModel':
-        this._uis.set(id, new FoodUi(pos, color));
+        this._uis.set(id, new FoodUi(pos, color, properties['quantity']));
         break;
       default:
         console.log('unknown model type: ' + type)
@@ -144,26 +145,12 @@ export default class Ui {
     return new Array();
   };
 
-  handleClick(pos) {
+  handleClick(evtPos) {
+    let rect = this._box.getBoundingClientRect();
+    let pos = new Position(evtPos.x - rect.left, evtPos.y - rect.top);
+
     let events = new Array();
-    let obj = this._findObjectAt(pos);
-    if (obj) {
-      console.log('click in mode=' + this._mode + ' on obj=' + obj.constructor.name);
-      //      this._handleActive(obj.id);
-      switch (this._mode) {
-        case 'ant':
-          if (obj.constructor.name == 'HillUi') {
-            events.push(Event.newCreate(this._mode, pos.toModel()));
-          }
-          break;
-        default:
-          console.log('click ignored');
-      }
-    } else {
-      if (this._mode) {
-        events.push(Event.newCreate(this._mode, pos.toModel()))
-      }
-    }
+    events.push(Event.newClick(this._mode, pos.toModel()));
     return events;
   }
   
@@ -173,7 +160,7 @@ export default class Ui {
       if (!result) {
         let distance = obj.pos.distanceTo(pos); 
         console.log('distance to ' + obj.constructor.name + " is " + distance);
-        if (distance < 25.0) {
+        if (distance < 15.0) {
           result = obj;
         }
       }

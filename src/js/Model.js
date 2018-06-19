@@ -28,7 +28,7 @@ export default class Model {
   handleEvent(event) {
     let events = new Array();
     switch (event.type) {
-    case Event.CREATE:
+    case Event.CLICK:
       let created = this._createModel(event.payload);
       if (created) {
         events.push(created);
@@ -41,32 +41,57 @@ export default class Model {
   }
 
   _createModel(payload) {
-    let name = payload['name'];
+    let mode = payload['mode'];
     let pos = payload['pos'];
-    switch (name) {
+    switch (mode) {
     case 'hill':
-      let hillColor = '#'+Math.floor(Math.random()*16777215).toString(16);
-      return this._addHill(pos, hillColor);
+      return this._createHill(pos);
     case 'ant':
-      let home = this._findObjectAt(pos);
-      if (home) {
-        return this._addAnt(home);
-      }
-      break;
+      return this._createAnt(pos);
     case 'food':
-      let quantity = Math.floor(Math.random()*10);
-      return this._addFood(pos, quantity);
-    default:
-      console.log("create " + name + ": to be implemented");      
+      return this._createFood(pos);
     }
   }
 
-  _findObjectAt(pos) {
+  _createHill(pos) {
+    let obj = this._findObjectAt(pos);
+    if (!obj) {
+      let color = '#'+Math.floor(Math.random()*16777215).toString(16);
+      let hill = new HillModel(pos, color);
+      return this._addObject(hill);
+    }
+  }
+
+  _createAnt(pos) {
+    let obj = this._findObjectAt(pos, HillModel);
+    if (obj) {
+      let ant = new AntModel(obj);
+      return this._addObject(ant);
+    }
+  }
+
+  _createFood(pos) {
+    let obj = this._findObjectAt(pos);
+    if (!obj) {
+      let quantity = 1 + Math.floor(Math.random()*9);
+      let food = new FoodModel(pos, quantity);
+      let properties = {'quantity': quantity};
+      return this._addObject(food, properties);
+    }
+  }
+
+  _findObjectAt(pos, model) {
+    let minDist = 99999999999999;
     let result = undefined;
     this._objects.forEach(function(obj) {
-      let distance = pos.distanceTo(obj.pos);
-      if (distance < 20) {
-        result = obj;
+      if (!model || model.name == obj.constructor.name) {
+        let distance = pos.distanceTo(obj.pos);
+        console.log("distance=" + distance)
+        if (distance < 5 && distance < minDist) {
+          minDist = distance;
+          result = obj;
+          console.log("result=" + result.constructor.name);
+        }
       }
     });
     return result;
@@ -76,7 +101,25 @@ export default class Model {
     let allEvents = new Array();
     // update all models
     this._objects.forEach((obj) => {
-      obj.update(allEvents);
+      let updateEvents = obj.update();
+      if (updateEvents) {
+        updateEvents.forEach((event) => {
+          allEvents.push(event);
+        });
+      }
+    });
+    // "collision" detection
+    this._objects.forEach((obj1) => {
+      this._objects.forEach((obj2) => {
+        if (obj1.id != obj2.id && obj1.pos.equals(obj2.pos)) {
+          let collisionEvents = obj1.handleCollisionWith(obj2);
+          if (collisionEvents) {
+            collisionEvents.forEach((event) => {
+              allEvents.push(event);
+            });
+          }
+        }
+      });
     });
     // check if some objects are gone
     this._objects.forEach((obj) => {
@@ -88,24 +131,9 @@ export default class Model {
     return allEvents;
   }
 
-  _addHill(pos, color) {
-    let hill = new HillModel(pos, color);
-    return this._addObject(hill);
-  }
-
-  _addAnt(hill) {
-      let ant = new AntModel(hill);
-      return this._addObject(ant);
-  }
-
-  _addFood(pos, quantity) {
-    let food = new FoodModel(pos, quantity);
-    return this._addObject(food);
-  }
-
-  _addObject(model) {
+  _addObject(model, properties) {
     this._objects.set(model.id, model);
-    return Event.newCreated(model.id, model.constructor.name, model.pos, model.color);
+    return Event.newCreated(model.id, model.constructor.name, model.pos, model.color, properties);
   }
 
   static get HEIGHT() {

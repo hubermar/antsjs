@@ -17,6 +17,7 @@ export default class HillUi extends ObjectUi {
         ctx.beginPath();
         ctx.arc(this._pos.x, this._pos.y, r*5, 0, 2*Math.PI);
         ctx.stroke();
+        ctx.closePath();
       }
     }
 };

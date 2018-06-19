@@ -10,4 +10,11 @@ export default class FoodModel extends ObjectModel {
       return '#aaaa00';
     }
 
+    decrememnt() {
+      if (this._quantity > 0) {
+        this._quantity--;
+        return true;
+      }
+      return false;
+    }
 }

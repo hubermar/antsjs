@@ -32,8 +32,8 @@ export default class Position {
     return '(' + this.x + '/' + this.y + ')';
   } 
 
-  static equals(left, right) {
-    return left.x == right.x && left.y == right.y;
+  equals(other) {
+    return this.x == other.x && this.y == other.y;
   }
 
   toScreen() {

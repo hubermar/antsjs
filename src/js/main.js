@@ -42,26 +42,31 @@ let app = (function() {
     if (!_running) {
       return false;
     }
-    console.log("tick received");
     let tickEvents = _antsModel.update();
     _antsUi.handleEvents(tickEvents);
     return true;
   }
 
   function _handleKey(event) {
+    console.log("/---");
     let key = event.key;
     console.log("key [" + key + "] pressed");
     let keyEvents = _antsUi.handleKey(key);
     let modelEvents = _antsModel.handleEvents(keyEvents);
     _antsUi.handleEvents(modelEvents);
+    console.log("---/");
   }
 
   function _handleClick(event) {
+    console.log("/---");
     let pos = new Position(event.clientX, event.clientY);
     console.log("mouse clicked at " + pos.toString());
     let clickEvents = _antsUi.handleClick(pos);
+    console.log("click events=" + clickEvents);
     let modelEvents = _antsModel.handleEvents(clickEvents);
+    console.log("model events=" + modelEvents);
     _antsUi.handleEvents(modelEvents);
+    console.log("---/");
   }
 
   return {
