@@ -37,8 +37,6 @@ mvc pattern with clean separation of ui and model. (controller as needed)
 * ModelFactory/ViewFactory
 - draws object id
 - defines the exchangable object type id (decision: prefix of model class name, e.g. AntModel -> "Ant")
-* Controller
-- extract class from main.js
 
 === done items
 ==== bidirectional event handling
@@ -49,4 +47,6 @@ mvc pattern with clean separation of ui and model. (controller as needed)
 * model events 
 - triggered by timer as result of ui events
 
+* Controller
+- extract class from main.js
 
