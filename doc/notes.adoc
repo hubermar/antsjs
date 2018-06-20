@@ -31,7 +31,14 @@ mvc pattern with clean separation of ui and model. (controller as needed)
 - type of object - eg. HillModel vs HillUi vs Mode
 - should eg. AntUi know its model?
 * ant ui should show the energy level
-
+* events / model sync
+- more generalized types like object creation/deletion, property changes; not more!
+- use a generic way to copy properties
+* ModelFactory/ViewFactory
+- draws object id
+- defines the exchangable object type id (decision: prefix of model class name, e.g. AntModel -> "Ant")
+* Controller
+- extract class from main.js
 
 === done items
 ==== bidirectional event handling
