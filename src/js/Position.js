@@ -33,7 +33,7 @@ export default class Position {
   } 
 
   equals(other) {
-    return this.x == other.x && this.y == other.y;
+    return this.x === other.x && this.y === other.y;
   }
 
   toScreen() {
